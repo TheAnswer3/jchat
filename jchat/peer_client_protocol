@@ -1,0 +1,19 @@
+PEER-CLIENT PROTOCOL
+
+Peer requests:
+# GETIP nickname
+# CONNECT nickname password
+
+Server response:
+# SERVER code resource (optional)
+
+STATUS CODES MAP:
+
+1x Connection status:
+-10 : IP found
+-11 : IP non found in DB
+-12 : Found offline
+
+2x IP Request status:
+-20 : Connection success
+-21 : Connection failed 
