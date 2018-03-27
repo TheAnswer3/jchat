@@ -1,6 +1,6 @@
 REQUIREMENTS LIST
--Multiple P2P chat //TODO
--Identificative nickname //TODO
--Login with nickname and password //TODO
--Server with users management //TODO
--Local storage of chats with XML format (every chat in a different file) //TODO
+- Multiple P2P chat //TODO
+- Identificative nickname //TODO
+- Login with nickname and password //TODO
+- Server with users management //TODO
+- Local storage of chats with XML format (every chat in a different file) //TODO
