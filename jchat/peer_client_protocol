@@ -3,6 +3,7 @@ PEER-CLIENT PROTOCOL
 Peer requests:
 # GETIP nickname
 # CONNECT nickname password
+# SIGNUP nickname password password
 
 Server response:
 # SERVER code resource (optional)
@@ -17,3 +18,9 @@ STATUS CODES MAP:
 2x IP Request status:
 -20 : Connection success
 -21 : Connection failed 
+
+3x Accounting status:
+-30 : Signin success.
+-31 : Signup success.
+-32 : Signin failed : nickname does not exists.
+-33 : Signup failed : nickname already exists.
