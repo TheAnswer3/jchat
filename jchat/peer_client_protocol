@@ -24,3 +24,4 @@ STATUS CODES MAP:
 -31 : Signup success.
 -32 : Signin failed : nickname does not exists.
 -33 : Signup failed : nickname already exists.
+-34 : Signin failed : wrong password.
