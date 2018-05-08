@@ -33,6 +33,7 @@ public class Server extends Thread{
 		while(true) {
 			try {
 				Socket incoming=welcome.accept();
+				System.out.println("Accepting connection...");
 				new ServerThread(incoming, nickPsw, nickIP, semNickIP, semNickIP).start();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

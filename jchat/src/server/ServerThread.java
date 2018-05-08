@@ -21,27 +21,24 @@ public class ServerThread extends Thread {
 
 	public void run() {
 		try {
+			System.out.println(this);
 			BufferedReader in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			in.read();
 			String commandLine=in.readLine();
 			String[] parse=commandLine.split(" ");
-			switch(parse[0]) {
-			case("CONNECT"):
+			if(parse[0].equals("CONNECT")) 
 				connect(parse[1],parse[2]);
-				break;
-			case("SIGNUP"):
-				break;
-			case("GETIP"):
-				break;
-			default:
-				break;
-				
-			}
+			else if(parse[0].equals("SIGNUP"));
+			else if(parse[0].equals("GETIP"));
+			else System.out.println("Inputstream: "+commandLine);
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	private void connect(String nickname, String password) {
+		System.out.println("Connect command received.");
 		try {
 			PrintWriter out=new PrintWriter(socket.getOutputStream());
 			semNickPsw.acquire();
