@@ -10,14 +10,9 @@ Server response:
 
 STATUS CODES MAP:
 
-1x Connection status:
--10 : IP found
--11 : IP non found in DB
--12 : Found offline
-
 2x IP Request status:
--20 : Connection success
--21 : Connection failed 
+-20 : Request success : IP found.
+-21 : Request failed : nickname not found.
 
 3x Accounting status:
 -30 : Signin success.
@@ -25,3 +20,4 @@ STATUS CODES MAP:
 -32 : Signin failed : nickname does not exists.
 -33 : Signup failed : nickname already exists.
 -34 : Signin failed : wrong password.
+-35 : Signup failed : passwords are not equals. 

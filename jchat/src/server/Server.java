@@ -33,8 +33,9 @@ public class Server extends Thread{
 		while(true) {
 			try {
 				Socket incoming=welcome.accept();
-				System.out.println("Accepting connection...");
+				System.out.println("Accepting connection from "+incoming.getInetAddress()+"...");
 				new ServerThread(incoming, nickPsw, nickIP, semNickIP, semNickIP).start();
+				System.out.println("Connection accepted.");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -44,6 +45,8 @@ public class Server extends Thread{
 	
 	public static void main(String...args) {
 		Server server=new Server();
+		server.nickPsw.put("Aleandro", "ppp");
 		server.start();
+		System.out.println("Server started.");
 	}
 }
