@@ -7,8 +7,15 @@ public class ServerThread extends Thread {
 	Socket socket;
 	HashMap<String,String> nickPsw;
 	HashMap<String,InetAddress> nickIP;
+	
+	StatusTable status;
+	UsersTable users;
+	
 	Semaphore semNickPsw;
 	Semaphore semNickIP;
+	
+	final String NAME_STRING;
+	
 	public ServerThread(Socket socket, HashMap<String, String> nickPsw, HashMap<String, InetAddress> nickIP,
 			Semaphore semNickPsw, Semaphore semNickIP) {
 		super();
@@ -17,22 +24,22 @@ public class ServerThread extends Thread {
 		this.nickIP = nickIP;
 		this.semNickPsw = semNickPsw;
 		this.semNickIP = semNickIP;
+		
+		NAME_STRING=this.getName();
 	}
 
+	public ServerThread(Socket socket,StatusTable status,UsersTable users) {
+		this.socket=socket;
+		this.status=status;
+		this.users=users;
+		NAME_STRING=this.getName();
+	}
+	
 	public void run() {
 		try {
 			BufferedReader in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			String commandLine="";
-			
 			commandLine=in.readLine();
-			
-			/*
-			while(more) {
-				String line=in.readLine();
-				if(line==null) more=false;
-				else commandLine+=line;
-			}
-			*/
 			String[] parse=commandLine.split(" ");
 			if(parse[0].equals("CONNECT")) 
 				connect(parse[1],parse[2]);
@@ -40,10 +47,10 @@ public class ServerThread extends Thread {
 				signup(parse[1],parse[2]);
 			else if(parse[0].equals("GETIP"))
 				getip(parse[1]);
-			else System.out.println("Inputstream: "+commandLine);
+			else System.out.println("Unexpected inputstream: "+commandLine);
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Problems with socket stream.");
 		}
 
 	}
@@ -52,47 +59,35 @@ public class ServerThread extends Thread {
 		System.out.println("Getip command received: GETIP "+nickname+".");
 		try {
 			PrintWriter out=new PrintWriter(socket.getOutputStream(),true);
-			semNickIP.acquire();
-			InetAddress ip=nickIP.get(nickname);
-			semNickIP.release();
-			if(ip==null) {
-				out.println("SERVER 21 NicknameNotFound");
-				System.out.println("Getip request failed.");
+			if(status.isOnline(nickname)) {
+				out.println("SERVER 20 "+status.getIP(nickname).getHostAddress());
+				printStatus(20);
 			}
 			else {
-				out.println("SERVER 20 "+ip.getHostAddress());
-				System.out.println("Getip request succeded.");
+				out.println("SERVER 21 NicknameNotFound");
+				printStatus(21);
 			}
 				
 		}catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 	}
 
 	private void signup(String nickname, String password) {
 		System.out.println("Signup command received: SIGNUP "+nickname+" "+password+".");
 		try {
 			PrintWriter out=new PrintWriter(socket.getOutputStream(),true);
-			semNickPsw.acquire();
-			if(!nickPsw.containsKey(nickname)) {
-				nickPsw.put(nickname, password);
-				semNickPsw.release();
-				out.println("SERVER 31 SignupSuccess");
-				System.out.println("Signup request succeded.");
+			if(users.exists(nickname)) {
+				out.println("SERVER 33 NicknameAlreadyExists");
+				printStatus(33);
 			}
 			else {
-				semNickPsw.release();
-				out.println("SERVER 33 NicknameAlreadyExists");
-				System.out.println("Signup request failed with error 33.");
+				users.addUser(nickname, password);
+				out.println("SERVER 31 SignupSuccess");
+				printStatus(31);
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -102,54 +97,61 @@ public class ServerThread extends Thread {
 		System.out.println("Connect command received: CONNECT "+nickname+" "+password+".");
 		try {
 			PrintWriter out=new PrintWriter(socket.getOutputStream(),true);
-			semNickPsw.acquire();
-			if(nickPsw.containsKey(nickname)) {
-				boolean isPswOK=nickPsw.get(nickname).equals(password);
-				semNickPsw.release();
-				if(isPswOK) {
-					InetAddress ip=socket.getInetAddress();
-					updateNickIP(nickname,ip);
+			if(users.exists(nickname)) {
+				boolean validLogin=users.login(nickname, password);
+				if(validLogin) {
+					status.login(nickname, socket.getInetAddress());
 					out.println("SERVER 30 SigninSuccess");
-					System.out.println("Connect request succeded.");
+					printStatus(30);
 				}
 				else {
 					out.println("SERVER 34 WrongPassword");
-					System.out.println("Connect request failed with error 34.");
+					printStatus(34);
 				}
 			}
 			else {
-				semNickPsw.release();
 				out.println("SERVER 32 NicknameDoesNotExists");
-				System.out.println("Connect request failed with error 32.");
+				printStatus(32);
 			}
 			
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public boolean updateNickIP(String nickname,InetAddress ip) {
-		boolean added=false;
-		try {
-			semNickIP.acquire();
-			nickIP.put(nickname, ip);
-			semNickIP.release();
-			added=true;
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	private void printStatus(int code) {
+		String toPrint="["+NAME_STRING+"]: ";
+		switch(code) {
+		case(20):
+			toPrint+="Getip request succeded.";
+			break;
+		case(21):
+			toPrint+="Getip request failed with error 21.";
+			break;
+		case(30):
+			toPrint+="Connect request succeded";
+			break;
+		case(31):
+			toPrint+="Signup request succeded.";
+			break;
+		case(32):
+			toPrint+="Connect request failed with error 32.";
+			break;
+		case(33):
+			toPrint+="Signup request failed with error 33.";
+			break;
+		case(34):
+			toPrint+="Connect request failed with error 34.";
+			break;
+			
 		}
-		System.out.println("Nickname-IP Updated. New map: "+nickIP);
-		return added;
+		System.out.println(toPrint);
 	}
 	
 	public String toString() {
 		StringBuilder sb=new StringBuilder(200);
-		sb.append("ServerThread: socket "+socket.toString());
+		sb.append("ServerThread "+NAME_STRING+" : socket "+socket.toString());
 		return sb.toString();
 	}
 	
