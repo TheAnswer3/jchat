@@ -16,7 +16,6 @@ public class Client extends Thread{
 
 	@Override
 	public void run() {
-		// Dichiarazione variabili
 		@SuppressWarnings("resource")
 		Scanner sc = new Scanner(System.in);
 		ciclo1:
@@ -63,11 +62,8 @@ public class Client extends Thread{
 							String msg = "SIGNUP " + nickname + " " + password;
 							out.println(msg);
 							//Ricezione e composizione del messaggio di risposta
-							boolean more = true;
 							String rsp = in.readLine();
-							System.out.println(rsp);
-							//Analisi dei vari casi d'errore nella risposta
-							//Caso1: nickname già presente nel Database
+							//Caso d'errore: nickname già presente nel Database
 							if(rsp.equals("SERVER 33 NicknameAlreadyExists"))
 								continue ciclo1;
 							System.out.println("Creazione account completata con successo");
