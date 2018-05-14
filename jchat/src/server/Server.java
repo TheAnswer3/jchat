@@ -4,12 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
 import utils.*;
-/* TODO
- * Porta default: 9876
- * Mappa nick-password, permanente.
- * Mappa nick-IP, non permanente.
- * 
- */
+
 public class Server extends Thread{
 	ServerSocket welcome;
 	/*
@@ -18,7 +13,9 @@ public class Server extends Thread{
 	Semaphore semNickPsw;
 	Semaphore semNickIP;
 	*/
+	//Data structure for users' connection status
 	StatusTable status;
+	//Data structure for registered users
 	UsersTable users;
 	boolean isStarted=false;
 	
@@ -32,6 +29,7 @@ public class Server extends Thread{
 		status=new StatusTableHashMap(new HashMap<>());
 		users=new UsersTableHashMap(new HashMap<>());
 		try {
+			//Welcome socket
 			welcome=new ServerSocket(Connectivity.PORT);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -43,18 +41,20 @@ public class Server extends Thread{
 		isStarted=true;
 		while(true) {
 			try {
+				//Accepting new sockets
 				Socket incoming=welcome.accept();
 				System.out.println("Accepting connection from "+incoming.getInetAddress()+"...");
-				//new ServerThread(incoming, nickPsw, nickIP, semNickIP, semNickIP).start();
+				//Start server thread
 				new ServerThread(incoming,status,users);
 				System.out.println("Connection accepted.");
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				// TODO 
 				e.printStackTrace();
 			}
 		}
 	}
 	
+	//Add users from Server class
 	public boolean addUser(String nickname,String password) {
 		users.addUser(nickname, password);
 		return true;
